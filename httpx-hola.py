@@ -3,6 +3,7 @@ import random
 import uuid
 
 import httpx
+from lxml import html
 
 
 class Settings:
@@ -10,7 +11,7 @@ class Settings:
         self.randomProxy = randomProxy
         self.userCountry = userCountry
         self.ccgi_url = "https://client.hola.org/client_cgi/"
-        self.ext_ver = "1.164.641"
+        self.ext_ver = self.get_ext_ver()
         self.ext_browser = "chrome"
         self.user_uuid = uuid.uuid4().hex
         self.user_agent = "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36"
@@ -19,6 +20,15 @@ class Settings:
         self.zoneAvailable = ["AR", "AT", "AU", "BE", "BG", "BR", "CA", "CH", "CL", "CO", "CZ", "DE", "DK", "ES", "FI",
                               "FR", "GR", "HK", "HR", "HU", "ID", "IE", "IL", "IN", "IS", "IT", "JP", "KR", "MX", "NL",
                               "NO", "NZ", "PL", "RO", "RU", "SE", "SG", "SK", "TR", "UK", "US", "GB"]
+
+    def get_ext_ver(self) -> str:
+        about = httpx.get("https://hola.org/access/my/settings#/about").text
+        if 'window.pub_config.init({"ver":"' in about:
+            version = about.split('window.pub_config.init({"ver":"')[1].split('"')[0]
+            return version
+
+        # last know working version
+        return "1.199.485"
 
 
 class Engine:
@@ -48,7 +58,7 @@ class Engine:
         ).json()["key"]
 
     def zgettunnels(
-            self, session_key: str, country: str, timeout: float = 10.0
+        self, session_key: str, country: str, timeout: float = 10.0
     ) -> json:
 
         qs = {
@@ -77,8 +87,8 @@ class Hola:
             self.settings.userCountry = httpx.get(self.myipUri).json()["country"]
 
         if (
-                not self.settings.userCountry in self.settings.zoneAvailable
-                or self.settings.randomProxy
+            not self.settings.userCountry in self.settings.zoneAvailable
+            or self.settings.randomProxy
         ):
             self.settings.userCountry = random.choice(self.settings.zoneAvailable)
 
@@ -86,8 +96,12 @@ class Hola:
 
 
 def init_proxy(data):
-    settings = Settings(data["zone"])  # True if you want random proxy each request / "DE" for a proxy with region of your choice (German here) / False if you wish to have a proxy localized to your IP address
-    settings.port_type_choice = data["port"]  # direct return datacenter ipinfo, peer "residential" (can fail sometime)
+    settings = Settings(
+        data["zone"]
+    )  # True if you want random proxy each request / "DE" for a proxy with region of your choice (German here) / False if you wish to have a proxy localized to your IP address
+    settings.port_type_choice = data[
+        "port"
+    ]  # direct return datacenter ipinfo, peer "residential" (can fail sometime)
 
     hola = Hola(settings)
     engine = Engine(settings)
@@ -100,5 +114,9 @@ def init_proxy(data):
 
 
 if __name__ == "__main__":
-    test = httpx.get("https://hola.org/myip.json", params={"full": True}, proxies=init_proxy({"zone": "DE", "port": "peer"})).text
+    test = httpx.get(
+        "https://hola.org/myip.json",
+        params={"full": True},
+        proxies=init_proxy({"zone": "DE", "port": "peer"}),
+    ).text
     print(test)
