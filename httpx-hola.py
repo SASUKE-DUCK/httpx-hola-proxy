@@ -77,8 +77,8 @@ class Hola:
             self.settings.userCountry = httpx.get(self.myipUri).json()["country"]
 
         if (
-                not self.settings.userCountry in self.settings.zoneAvailable
-                or self.settings.randomProxy
+            self.settings.userCountry not in self.settings.zoneAvailable
+            or self.settings.randomProxy
         ):
             self.settings.userCountry = random.choice(self.settings.zoneAvailable)
 
