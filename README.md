@@ -1,6 +1,13 @@
 
 ![Logo](https://user-images.githubusercontent.com/26823931/154585806-3baa24b0-f6bd-43e9-b568-0c981284deef.svg)
 
+## How to use
+
+Simply edit to the region you want to use and run the script.
+
+* python httpx-hola.py
+
+![HOLAPROXY](https://i.ibb.co/s2TNjj7/Capture.png)
 
 # httpx-hola-proxy
 
