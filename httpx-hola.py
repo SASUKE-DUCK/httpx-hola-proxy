@@ -1,3 +1,6 @@
+import pyfiglet
+from rich import print
+from typing import DefaultDict
 import json
 import random
 import uuid
@@ -5,6 +8,8 @@ import uuid
 import httpx
 from lxml import html
 
+title = pyfiglet.figlet_format('HTTPX HOLA PROXY', font='slant')
+print(f'[magenta]{title}[/magenta]')
 
 class Settings:
     def __init__(self, userCountry: str = None, randomProxy: bool = False) -> None:
@@ -114,9 +119,7 @@ def init_proxy(data):
 
 
 if __name__ == "__main__":
-    test = httpx.get(
-        "https://hola.org/myip.json",
-        params={"full": True},
-        proxies=init_proxy({"zone": "DE", "port": "peer"}),
-    ).text
+    prox = init_proxy({"zone": "US", "port": "peer"})
+    print(prox)
+    test = httpx.get("https://hola.org/myip.json", params={"full": True}, proxies=prox).text
     print(test)
